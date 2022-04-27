@@ -1,0 +1,10 @@
+spring:
+  application:
+    name: catalog-service
+  output:
+    ansi:
+      enabled: always
+  messages:
+    basename: i18n/messages
+    cache-duration: 0
+    fall-back-to-system-locale: false

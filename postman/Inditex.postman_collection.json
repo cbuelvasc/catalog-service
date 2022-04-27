@@ -1,0 +1,101 @@
+{
+	"info": {
+		"_postman_id": "491383ab-befb-4e93-8416-de406e49e747",
+		"name": "Inditex",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Get price by id",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "localhost:9001/api/prices/4",
+					"host": [
+						"localhost"
+					],
+					"port": "9001",
+					"path": [
+						"api",
+						"prices",
+						"4"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get all prices",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "localhost:9001/api/prices/",
+					"host": [
+						"localhost"
+					],
+					"port": "9001",
+					"path": [
+						"api",
+						"prices",
+						""
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get current price by current date, product id and brand id",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "localhost:9001/api/prices/currentPrice?applicationDate=2020-06-16 10:00:00&productId=35455&brandId=1",
+					"host": [
+						"localhost"
+					],
+					"port": "9001",
+					"path": [
+						"api",
+						"prices",
+						"currentPrice"
+					],
+					"query": [
+						{
+							"key": "applicationDate",
+							"value": "2020-06-16 10:00:00"
+						},
+						{
+							"key": "productId",
+							"value": "35455"
+						},
+						{
+							"key": "brandId",
+							"value": "1"
+						}
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}

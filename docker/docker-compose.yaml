@@ -1,0 +1,97 @@
+version: "3.8"
+
+services:
+
+  # Applications
+
+  catalog-service:
+    image: "catalog-service"
+    container_name: "catalog-service"
+    environment:
+      - "BPL_JVM_THREAD_COUNT=50"
+      - "BPL_DEBUG_ENABLED=true"
+      - "BPL_DEBUG_PORT=8001"
+      - "JAVA_TOOL_OPTIONS=-javaagent:/workspace/BOOT-INF/lib/opentelemetry-javaagent-1.12.1.jar"
+      - "OTEL_SERVICE_NAME=catalog-service"
+      - "OTEL_EXPORTER_OTLP_ENDPOINT=http://tempo:4317"
+      - "SPRING_DATASOURCE_URL=jdbc:postgresql://inditex-postgres:5432/inditex_db"
+      - "SPRING_PROFILES_ACTIVE=develop"
+    depends_on:
+      - inditex-postgres
+      - fluent-bit
+      - tempo
+    ports:
+      - "9001:9001"
+      - "8001:8001"
+    logging:
+      driver: fluentd
+      options:
+        fluentd-address: 127.0.0.1:24224
+
+    # Backing Services
+
+  inditex-postgres:
+    image: "postgres:14.1"
+    container_name: "inditex-postgres"
+    environment:
+      - "POSTGRES_USER=user"
+      - "POSTGRES_PASSWORD=password"
+    volumes:
+      - "./postgresql/init.sql:/docker-entrypoint-initdb.d/init.sql"
+      - "./postgres-data:/var/lib/postgresql/data"
+    ports:
+      - "5432:5432"
+
+  # Observability
+
+  grafana:
+    image: "grafana/grafana:8.4.4"
+    container_name: "grafana"
+    depends_on:
+      - loki
+      - prometheus
+      - tempo
+    ports:
+      - "3000:3000"
+    environment:
+      - "GF_SECURITY_ADMIN_USER=user"
+      - "GF_SECURITY_ADMIN_PASSWORD=password"
+    volumes:
+      - "./observability/grafana/datasource.yml:/etc/grafana/provisioning/datasources/datasource.yml"
+      - "./observability/grafana/dashboards:/etc/grafana/provisioning/dashboards"
+
+  loki:
+    image: "grafana/loki:2.4.2"
+    container_name: "loki"
+    depends_on:
+      - fluent-bit
+    ports:
+      - "3100:3100"
+
+  prometheus:
+    image: "prom/prometheus:v2.34.0"
+    container_name: "prometheus"
+    volumes:
+      - "./observability/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml"
+    ports:
+      - "9090:9090"
+
+  tempo:
+    image: "grafana/tempo:1.3.2"
+    container_name: "tempo"
+    command: -config.file /etc/tempo-config.yml
+    volumes:
+      - "./observability/tempo/tempo.yml:/etc/tempo-config.yml"
+    ports:
+      - "3110:3100"     # Tempo
+      - "4317:4317"     # OTel
+
+  fluent-bit:
+    image: "grafana/fluent-bit-plugin-loki:2.4.2-amd64"
+    container_name: "fluent-bit"
+    ports:
+      - "24224:24224"
+    environment:
+      - "LOKI_URL=http://loki:3100/loki/api/v1/push"
+    volumes:
+      - "./observability/fluent-bit/fluent-bit.conf:/fluent-bit/etc/fluent-bit.conf"

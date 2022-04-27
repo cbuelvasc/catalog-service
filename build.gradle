@@ -1,0 +1,104 @@
+plugins {
+	id 'org.springframework.boot' version '2.6.7'
+	id 'io.spring.dependency-management' version '1.0.11.RELEASE'
+	id 'java'
+}
+
+group = 'com.inditex'
+version = '0.0.1-SNAPSHOT'
+sourceCompatibility = '17'
+
+configurations {
+	compileOnly {
+		extendsFrom annotationProcessor
+	}
+}
+
+compileJava {
+	options.compilerArgs += [
+			'-Amapstruct.suppressGeneratorTimestamp=true',
+			'-Amapstruct.defaultComponentModel=spring',
+			'-Amapstruct.verbose=true'
+	]
+}
+
+repositories {
+	mavenCentral()
+}
+
+ext {
+	set('otelVersion', "1.12.1")
+	set('springCloudVersion', "2021.0.1")
+	set('testcontainersVersion', "1.16.2")
+	set('testKeycloakVersion', "1.10.0")
+}
+
+dependencies {
+	implementation 'org.springframework.boot:spring-boot-starter-actuator'
+	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+	implementation 'org.springframework.boot:spring-boot-starter-web'
+	implementation 'org.springframework.boot:spring-boot-starter-hateoas'
+	implementation 'org.springframework.boot:spring-boot-starter-webflux'
+	implementation 'org.springframework.boot:spring-boot-starter-validation'
+	implementation 'org.springframework.cloud:spring-cloud-starter-config'
+	implementation 'org.springframework.retry:spring-retry'
+	implementation 'org.flywaydb:flyway-core'
+	implementation 'org.mapstruct:mapstruct:1.4.2.Final'
+	implementation 'io.vavr:vavr:0.10.4'
+	implementation 'org.jeasy:easy-random-core:5.0.0'
+
+	compileOnly 'org.projectlombok:lombok'
+	runtimeOnly 'com.h2database:h2'
+	runtimeOnly 'org.postgresql:postgresql'
+	runtimeOnly 'io.micrometer:micrometer-registry-prometheus'
+	runtimeOnly "io.opentelemetry.javaagent:opentelemetry-javaagent:${otelVersion}"
+
+	annotationProcessor "org.springframework.boot:spring-boot-configuration-processor"
+	annotationProcessor 'org.projectlombok:lombok'
+	annotationProcessor 'org.projectlombok:lombok-mapstruct-binding:0.1.0'
+	annotationProcessor 'org.mapstruct:mapstruct-processor:1.4.2.Final'
+
+	testImplementation 'org.springframework.boot:spring-boot-starter-test'
+	testImplementation 'org.springframework.boot:spring-boot-starter-webflux'
+	testImplementation 'org.springframework.security:spring-security-test'
+	testImplementation 'org.testcontainers:junit-jupiter'
+	testImplementation 'org.testcontainers:postgresql'
+	testImplementation "com.github.dasniko:testcontainers-keycloak:${testKeycloakVersion}"
+
+	testCompileOnly 'org.projectlombok:lombok'
+
+	testAnnotationProcessor 'org.projectlombok:lombok'
+	testAnnotationProcessor 'org.mapstruct:mapstruct-processor:1.4.2.Final'
+}
+
+dependencyManagement {
+	imports {
+		mavenBom "org.springframework.cloud:spring-cloud-dependencies:${springCloudVersion}"
+		mavenBom "org.testcontainers:testcontainers-bom:${testcontainersVersion}"
+	}
+}
+
+springBoot {
+	buildInfo()
+}
+
+bootRun {
+	systemProperty 'spring.profiles.active', 'testdata'
+}
+
+bootBuildImage {
+	imageName = "${project.name}"
+	environment = ["BP_JVM_VERSION": "17.*"]
+
+	docker {
+		publishRegistry {
+			username = project.findProperty("registryUsername")
+			password = project.findProperty("registryToken")
+			url = project.findProperty("registryUrl")
+		}
+	}
+}
+
+tasks.named('test') {
+	useJUnitPlatform()
+}
