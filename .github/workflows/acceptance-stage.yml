@@ -10,7 +10,7 @@ env:
   OWNER: cbuelvasc
   REGISTRY: ghcr.io
   APP_REPO: catalog-service
-  DEPLOY_REPO: blue-deployment
+  DEPLOY_REPO: catalog-service
   VERSION: ${{ github.sha }}
 
 jobs:
