@@ -5,6 +5,8 @@ import com.fasterxml.jackson.databind.JsonMappingException.Reference;
 import com.fasterxml.jackson.databind.exc.InvalidFormatException;
 import com.inditex.catalogservice.commons.exeption.*;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.core.Ordered;
+import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.validation.FieldError;
@@ -27,6 +29,7 @@ import static io.vavr.Predicates.instanceOf;
 
 @Slf4j
 @ControllerAdvice
+@Order(Ordered.LOWEST_PRECEDENCE)
 public class GlobalDefaultExceptionHandler {
 
     private static final String ERROR_EXCEPTION_TEMPLATE = "Error [{}]";
@@ -36,6 +39,11 @@ public class GlobalDefaultExceptionHandler {
         this.exceptionMessage = exceptionMessage;
     }
 
+    /**
+     * Handle general uncaught exceptions
+     *
+     * @param ex - Exception
+     */
     @ResponseBody
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     @ExceptionHandler(value = {Exception.class})
@@ -68,6 +76,11 @@ public class GlobalDefaultExceptionHandler {
         return new ExceptionResponse(ExceptionEnum.REQUEST_INPUT_ERROR.getValue(), null, message);
     }
 
+    /**
+     * Handle ServletRequestBindingException
+     *
+     * @param ex - Exception
+     */
     @ResponseBody
     @ExceptionHandler
     @ResponseStatus(HttpStatus.BAD_REQUEST)
@@ -77,6 +90,11 @@ public class GlobalDefaultExceptionHandler {
         return new ExceptionResponse(ExceptionEnum.REQUEST_INPUT_ERROR.getValue(), null, ex.getMessage());
     }
 
+    /**
+     * Handle HttpMediaTypeNotSupportedExceptions
+     *
+     * @param ex - Exception
+     */
     @ResponseBody
     @ExceptionHandler
     @ResponseStatus(HttpStatus.UNSUPPORTED_MEDIA_TYPE)
@@ -89,14 +107,24 @@ public class GlobalDefaultExceptionHandler {
         return new ExceptionResponse(ExceptionEnum.REQUEST_INPUT_ERROR.getValue(), null, unsupported);
     }
 
+    /**
+     * Handle ConstraintViolationExceptions
+     *
+     * @param ce - Exception
+     */
     @ResponseBody
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     @ExceptionHandler(value = {ConstraintViolationException.class})
-    public ExceptionResponse ypConstraintViolationHandler(ConstraintViolationException ce) {
+    public ExceptionResponse constraintViolationHandler(ConstraintViolationException ce) {
         log.error(ERROR_EXCEPTION_TEMPLATE, ce.getMessage());
         return new ExceptionResponse(ExceptionEnum.REQUEST_INPUT_ERROR.getValue(), ce.getMessage());
     }
 
+    /**
+     * Handle MethodArgumentNotValidException
+     *
+     * @param ex - Exception
+     */
     @ResponseBody
     @ExceptionHandler
     @ResponseStatus(HttpStatus.BAD_REQUEST)
@@ -118,28 +146,44 @@ public class GlobalDefaultExceptionHandler {
         }
 
         return new ExceptionResponse(ExceptionEnum.REQUEST_INPUT_ERROR.getValue(), null, errors);
+
     }
 
+    /**
+     * Handle InditexExceptions
+     *
+     * @param inditexException The Inditex exception {@link InditexException}
+     */
     @ResponseBody
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     @ExceptionHandler(value = {InditexException.class})
-    public ExceptionResponse inditexExceptionHandler(InditexException exception) {
-        log.error(ERROR_EXCEPTION_TEMPLATE, exception.getMessage());
+    public ExceptionResponse exceptionHandler(InditexException inditexException) {
+        log.error(ERROR_EXCEPTION_TEMPLATE, inditexException.getMessage());
 
-        String message = exceptionMessage.getMessage(exception.getErrorCode());
-        return new ExceptionResponse(exception.getErrorCode(), null, message);
+        String message = exceptionMessage.getMessage(inditexException.getErrorCode());
+        return new ExceptionResponse(inditexException.getErrorCode(), null, message);
     }
 
+    /**
+     * Handle NotFoundException
+     *
+     * @param notFoundException The Inditex exception {@link NotFoundException}
+     */
     @ResponseBody
     @ExceptionHandler(NotFoundException.class)
     @ResponseStatus(HttpStatus.NOT_FOUND)
-    public ExceptionResponse ypNotFoundExceptionHandler(NotFoundException ype) {
-        log.error(ERROR_EXCEPTION_TEMPLATE, ype.getMessage());
+    public ExceptionResponse notFoundExceptionHandler(NotFoundException notFoundException) {
+        log.error(ERROR_EXCEPTION_TEMPLATE, notFoundException.getMessage());
 
-        String message = exceptionMessage.getMessage(ype.getErrorCode());
-        return new ExceptionResponse(ype.getErrorCode(), null, message);
+        String message = exceptionMessage.getMessage(notFoundException.getErrorCode());
+        return new ExceptionResponse(notFoundException.getErrorCode(), null, message);
     }
 
+    /**
+     * Handle UnProcessableEntityException
+     *
+     * @param unProcessableEntityException The Inditex exception {@link UnProcessableEntityException}
+     */
     @ResponseBody
     @ResponseStatus(HttpStatus.UNPROCESSABLE_ENTITY)
     @ExceptionHandler(value = {UnProcessableEntityException.class})
@@ -149,4 +193,5 @@ public class GlobalDefaultExceptionHandler {
         String message = exceptionMessage.getMessage(unProcessableEntityException.getErrorCode());
         return new ExceptionResponse(unProcessableEntityException.getErrorCode(), null, message);
     }
+
 }

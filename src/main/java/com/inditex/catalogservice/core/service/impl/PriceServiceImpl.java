@@ -3,8 +3,8 @@ package com.inditex.catalogservice.core.service.impl;
 import com.inditex.catalogservice.commons.exeption.ExceptionEnum;
 import com.inditex.catalogservice.commons.exeption.NotFoundException;
 import com.inditex.catalogservice.core.domain.PriceDTO;
-import com.inditex.catalogservice.core.mapper.PriceCoreMapper;
 import com.inditex.catalogservice.core.service.IPriceService;
+import com.inditex.catalogservice.ports.inputs.rs.mapper.PriceMapper;
 import com.inditex.catalogservice.ports.output.dao.jpa.repository.PriceRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -21,7 +21,7 @@ public class PriceServiceImpl implements IPriceService {
 
     private final PriceRepository priceRepository;
 
-    private final PriceCoreMapper priceCoreMapper;
+    private final PriceMapper priceCoreMapper;
 
     @Override
     public PriceDTO getPrice(Long id) {
@@ -38,14 +38,10 @@ public class PriceServiceImpl implements IPriceService {
 
     @Override
     public PriceDTO getPriceByDateProductAndBrand(LocalDateTime applicationDate, Long productId, Long brandId) {
-
-        var prices = this.priceRepository.findByDatesAndProductIdAndBrandId(
-                applicationDate.toLocalDate().atStartOfDay(), applicationDate, applicationDate, productId, brandId);
-
+        var prices = this.priceRepository.findByDatesAndProductIdAndBrandId(applicationDate, productId, brandId);
         if (prices.isEmpty()) {
-            prices = this.priceRepository.findByDateAndProductIdAndBrandId(applicationDate, productId, brandId);
+            throw new NotFoundException(ExceptionEnum.NOT_FOUND_ERROR);
         }
-
         var price = Collections.max(prices, Comparator.comparing(o -> o.getPriority() >= 1));
         return priceCoreMapper.toPriceDTO(price);
     }
