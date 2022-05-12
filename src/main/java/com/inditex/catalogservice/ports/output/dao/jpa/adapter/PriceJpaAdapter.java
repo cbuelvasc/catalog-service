@@ -1,10 +1,11 @@
-package com.inditex.catalogservice.ports.output.dao.jpa.repository;
+package com.inditex.catalogservice.ports.output.dao.jpa.adapter;
 
 import com.inditex.catalogservice.commons.exeption.ExceptionEnum;
 import com.inditex.catalogservice.commons.exeption.NotFoundException;
 import com.inditex.catalogservice.core.domain.PriceDTO;
 import com.inditex.catalogservice.core.repository.PricePort;
 import com.inditex.catalogservice.ports.output.dao.jpa.mapper.PriceJpaMapper;
+import com.inditex.catalogservice.ports.output.dao.jpa.repository.PriceRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
