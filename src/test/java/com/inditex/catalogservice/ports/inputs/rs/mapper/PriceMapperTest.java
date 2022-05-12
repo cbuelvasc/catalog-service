@@ -1,7 +1,6 @@
 package com.inditex.catalogservice.ports.inputs.rs.mapper;
 
 import com.inditex.catalogservice.core.domain.PriceDTO;
-import com.inditex.catalogservice.ports.output.dao.jpa.entity.Price;
 import com.inditex.catalogservice.util.RandomTestUtil;
 import org.jeasy.random.EasyRandom;
 import org.junit.jupiter.api.BeforeAll;
@@ -20,25 +19,6 @@ public class PriceMapperTest {
     static void init() {
         mapper = Mappers.getMapper(PriceMapper.class);
         easyRandom = RandomTestUtil.buildFastEasyRandom();
-    }
-
-    @Test
-    void toPriceDTO_AllValues_Success() {
-        var price = easyRandom.nextObject(Price.class);
-        var priceDTO = mapper.toPriceDTO(price);
-
-        assertThat(priceDTO)
-                .isNotNull()
-                .usingRecursiveComparison()
-                .ignoringAllOverriddenEquals()
-                .isEqualTo(price);
-    }
-
-    @Test
-    void toPriceDTO_NullValues_success() {
-        var priceDTO = mapper.toPriceDTO(null);
-
-        assertThat(priceDTO).isNull();
     }
 
     @Test

@@ -41,7 +41,7 @@ public class PriceController implements IPriceController {
     public PagedModel<PriceResponse> getAllPrices(Pageable pageable) {
         log.info("REST request to get all prices");
         final Page<PriceDTO> page = this.priceService.getAllPrices(pageable);
-        return pagedResourcesAssembler.toModel(page, priceAssembler);
+        return this.pagedResourcesAssembler.toModel(page, priceAssembler);
     }
 
     @Override
